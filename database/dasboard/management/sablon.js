@@ -1,5 +1,5 @@
 /* 
-* Run zirocore.js Code : GLOBAL SCRIPT 
+* Run zirocore.js Code : GLOBAL SCRIPT MANAGEMENT SABLON
 * Realist Date : 10-Januari-2026 / 20:37 Wib
 * Developer Name : Aan Fauzi. 
 * Copyright © Ziro Core Inc.
