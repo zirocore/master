@@ -1,10 +1,10 @@
 // --- chat-widget.js ---
 (function() {
-    // KONFIGURASI URL (GANTI DENGAN URL ANDA)
+    // KONFIGURASI URL (URL ANDA SUDAH BENAR)
     const GAS_URL = "https://script.google.com/macros/s/AKfycbynAxBBVvV0O7T0kSWnr2m1BwhUmWPKsEpEgGi_owXk0HaV7CBL3xwBx__-A4RxBoXz/exec"; 
     const ADMIN_ID = 'admin_support';
 
-    // CSS INJECTED (Agar tampilan rapi di website manapun tanpa edit CSS website target)
+    // CSS INJECTED
     const css = `
         #ziro-chat-widget-container * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Helvetica, Arial, sans-serif; }
         #ziro-chat-fab {
@@ -23,7 +23,7 @@
         #ziro-chat-widget.open { transform: translateY(0); opacity: 1; visibility: visible; }
         .zcw-header { background: #008069; color: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; }
         .zcw-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
-        .zcw-body { flex: 1; background-color: #efe7dd; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .zcw-body { flex: 1; background-color: #efe7dd; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); }
         .zcw-footer { padding: 10px; background: #f0f2f5; display: flex; align-items: center; gap: 10px; }
         .zcw-input { flex: 1; padding: 10px 15px; border-radius: 20px; border: none; outline: none; background: white; font-size: 14px; }
         .zcw-send-btn { background: #00a884; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -36,20 +36,19 @@
         .zcw-led.red { background: #ff4d4d; }
         @keyframes blink { 50% { opacity: 0.5; } }
         
-        /* Responsive Mobile */
         @media (max-width: 480px) {
             #ziro-chat-widget { width: 90%; right: 5%; bottom: 80px; height: 70vh; }
             #ziro-chat-fab { bottom: 20px; right: 20px; }
         }
     `;
 
-    // Inject CSS ke head website target
+    // Inject CSS
     const style = document.createElement('style');
     style.type = 'text/css';
     style.appendChild(document.createTextNode(css));
     document.head.appendChild(style);
 
-    // Buat Struktur HTML Widget
+    // Struktur HTML Widget
     const widgetHTML = `
         <div id="ziro-chat-fab">
             <svg viewBox="0 0 24 24" width="30" height="30" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
@@ -77,30 +76,25 @@
         </div>
     `;
 
-    // Append Widget ke Body
     const div = document.createElement('div');
     div.innerHTML = widgetHTML;
     document.body.appendChild(div);
 
     // --- LOGIC JAVASCRIPT ---
-
-    // Generate ID Unik User berdasarkan LocalStorage Browser
     let CURRENT_USER_ID = localStorage.getItem('ziro_chat_id');
     if (!CURRENT_USER_ID) {
         CURRENT_USER_ID = 'web_user_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('ziro_chat_id', CURRENT_USER_ID);
     }
 
-    let state = {
-        messages: [],
-        isOpen: false
-    };
+    let state = { messages: [], isOpen: false };
 
     // API Functions
     async function fetchAPI(data) {
         try {
             const res = await fetch(GAS_URL, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' }, // Penting untuk GAS
                 body: JSON.stringify(data)
             });
             return await res.json();
@@ -113,7 +107,7 @@
     async function getChats() {
         try {
             updateLED('orange', 'Connecting...');
-            const res = await fetch(GAS_URL); // GET Request
+            const res = await fetch(GAS_URL);
             const data = await res.json();
             updateLED('green', 'Online');
             return data;
@@ -135,9 +129,9 @@
         const db = await getChats();
         if (!db || !db[CURRENT_USER_ID]) {
             if(db) {
-                // Buat session baru jika belum ada
+                // PERBAIKAN: Mengirim URL asli, bukan string teks
                 await fetchAPI({
-					websiteUrl: 'window.location.href',
+                    websiteUrl: window.location.href, 
                     action: 'create',
                     sessionId: CURRENT_USER_ID,
                     userName: 'Web User ' + CURRENT_USER_ID.substr(-4),
@@ -145,8 +139,7 @@
                 });
             }
         }
-        // Start Polling
-        setInterval(syncZiroData, 3000); // Cek tiap 3 detik
+        setInterval(syncZiroData, 3000);
         renderMessages();
     }
 
@@ -160,12 +153,9 @@
         if (state.messages.length !== serverCount) {
             state.messages = mySession.messages || [];
             renderMessages();
-            
-            // Notifikasi Badge
             const lastMsg = state.messages[state.messages.length - 1];
             if (lastMsg && lastMsg.sender === ADMIN_ID && !state.isOpen) {
                 updateBadge(1);
-                playNotificationSound(); // Opsional
             }
         }
     }
@@ -188,12 +178,10 @@
         const text = input.value.trim();
         if(!text) return;
 
-        // UI Instant Update
         state.messages.push({ sender: CURRENT_USER_ID, text: text, time: 'Now' });
         renderMessages();
         input.value = '';
 
-        // Send to Server
         await fetchAPI({
             action: 'sendMessage',
             sessionId: CURRENT_USER_ID,
@@ -206,7 +194,6 @@
         state.isOpen = !state.isOpen;
         const widget = document.getElementById('ziro-chat-widget');
         const badge = document.getElementById('ziro-badge');
-        
         if (state.isOpen) {
             widget.classList.add('open');
             badge.style.display = 'none';
@@ -227,12 +214,13 @@
         if(e.key === 'Enter') sendZiroMessage();
     }
 
-    function playNotificationSound() {
-        // Bisa ditambahkan audio simple jika diinginkan
-        // const audio = new Audio('notification.mp3'); audio.play().catch(e=>{});
-    }
+    // --- PERBAIKAN UTAMA: EKSPOR FUNGSI KE WINDOW ---
+    // Agar onclick="..." di HTML string bisa menemukan fungsi ini
+    window.toggleZiroChat = toggleZiroChat;
+    window.sendZiroMessage = sendZiroMessage;
+    window.handleZiroKey = handleZiroKey;
 
-    // Jalankan saat script dimuat
+    // Jalankan
     document.getElementById('ziro-chat-fab').onclick = toggleZiroChat;
     initZiroChat();
 
