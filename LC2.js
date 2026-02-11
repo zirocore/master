@@ -2,7 +2,7 @@
 (function() {
     // KONFIGURASI URL (URL ANDA SUDAH BENAR)
     const GAS_URL = "https://script.google.com/macros/s/AKfycbynAxBBVvV0O7T0kSWnr2m1BwhUmWPKsEpEgGi_owXk0HaV7CBL3xwBx__-A4RxBoXz/exec"; 
-    const ADMIN_ID = 'admin_support';
+    const ADMIN_ID = 'ziro_admin_support';
 
     // CSS INJECTED
     const css = `
@@ -35,10 +35,11 @@
         .zcw-led.orange { background: #ff9f43; animation: blink 1s infinite; }
         .zcw-led.red { background: #ff4d4d; }
         @keyframes blink { 50% { opacity: 0.5; } }
-        
+        footer#zirocore-footer {text-align: center;padding: 5px;font-size: 10px;}
         @media (max-width: 480px) {
             #ziro-chat-widget { width: 90%; right: 5%; bottom: 80px; height: 70vh; }
             #ziro-chat-fab { bottom: 20px; right: 20px; }
+			footer#zirocore-footer {text-align: center;padding: 5px;font-size: 7px;}
         }
     `;
 
@@ -73,6 +74,9 @@
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </button>
             </div>
+		<footer id="zirocore-footer">
+        <p>Power By © <a href="https://zirocore.blogspot.com" id="ziro-dev" target="_blank">Ziro Core Inc.</a></p>
+       </footer>
         </div>
     `;
 
